@@ -1,55 +1,40 @@
-# Planit Traveler — Travel Itinerary Platform
+# Planit Traveler
 
-**Live app:** [planittraveler.com](https://planittraveler.com)
+Plan a trip with other people, in one place.
 
-Production full-stack SaaS built and self-deployed solo — no team, no budget, no shortcuts.
+**Live:** [planittraveler.com](https://planittraveler.com) · [See a trip without signing in](https://planittraveler.com/itineraries/26/reefs-tokyo-kyoto-and-osaka-1772089801)
 
-## What It Does
+The code is in a private repository. This page explains how the app works.
 
-A collaborative travel itinerary platform where users can build, share, and export 
-detailed trip plans. Designed for real production from day one.
+## What it does
 
-## Technical Highlights
+- Build a day-by-day trip and invite people to edit it or only look at it
+- Publish trips and travel posts that anyone can read
 
-### 🔐 Auth & Security
-Custom JWT authentication using HttpOnly cookies + CSRF token validation — deliberately 
-avoiding the localStorage anti-pattern to protect against XSS and CSRF attacks simultaneously.
+## Engineering
 
-### 👥 Collaboration System
-Full role-based access control with invite/accept/decline flow. Three permission tiers 
-(owner/editor/viewer) enforced via object-level DRF permission classes.
+**Saving without overwriting each other.** Every trip has a version number. A save that started from an older version is rejected, and the person keeps their unsaved text and can copy or download it. Changes are not merged automatically.
 
-### 📤 Export Pipeline
-Multi-format export (PDF, PNG, email) using DOM serialization with cross-browser formatting 
-preservation — the platform's core monetization feature.
+**Sign-in.** Django REST Framework and Simple JWT, with tokens in HttpOnly cookies, CSRF checks, and sessions that end on the server when you sign out. Admin sign-in uses two-factor codes.
 
-### ⚡ Frontend Performance
-High-performance data tables via TanStack Table + react-virtual with drag-drop reordering 
-and inline rich-text editing through custom TipTap extensions.
+**Permissions.** Owner, editor and viewer roles, checked for each trip on the server.
 
-### 🛡️ Production Ops
-Rate limiting on public endpoints, spam detection heuristics, soft-delete on comments, 
-admin email alerts, and cascade-aware database protection rules.
+**Rate limits.** Counted in PostgreSQL, so every server process shares one count.
+
+**Email.** Account emails go into a PostgreSQL queue, and a separate job sends and retries them.
+
+**Uploads and content.** Files are checked by their contents rather than their name, and HTML is cleaned on the server.
 
 ## Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | React, Tailwind CSS, TanStack Table, TipTap, react-virtual |
-| Backend | Django, Django REST Framework, PostgreSQL |
-| Auth | Custom JWT + HttpOnly cookies + CSRF validation |
-| DevOps | Hetzner VPS, Nginx, SSL/TLS, Linux (Ubuntu) |
-
-## Architecture Decisions
-
-- **Self-hosted over managed:** Deployed on Hetzner VPS with Nginx reverse proxy for 
-  full control over infrastructure and cost
-- **Custom auth over Auth0/Firebase:** Built JWT auth from scratch to understand and 
-  control the full security surface
-- **DRF over GraphQL:** REST with object-level permissions was the right fit for this 
-  access control model
+|---|---|
+| Frontend | React, Vite, Tailwind CSS, TipTap, TanStack Table, dnd-kit |
+| Backend | Python, Django, Django REST Framework |
+| Database | PostgreSQL |
+| Tests | Django tests, Vitest, Playwright |
+| Server | Linux on Hetzner, Nginx, Gunicorn, GitHub Actions deployment |
 
 ## About
 
-Built by [Faris Khammash](https://linkedin.com/in/fariskhammash) — full-stack engineer 
-with a background in biomedical engineering and 6 years in regulated biotech environments.
+Designed, built and run by [Faris Khammash](https://linkedin.com/in/fariskhammash), using AI coding tools. The decisions, testing and releases are mine.
